@@ -1,0 +1,49 @@
+AGROTOUR 2026 · APP DEL EQUIPO (consulta de participantes)
+
+CÓMO FUNCIONA
+Los datos viven en Supabase, cifrados. La app los pide cada vez que se abre y los muestra desde la memoria:
+NO se guardan en el celular. En el celular solo queda el acceso (un código al azar), que sin datos en Supabase no sirve para nada.
+Cuando termina el evento, borrás todo de Supabase y en los celulares no queda nada.
+Cada link es PERSONAL: queda atado al primer celular que lo abre. En otro celular no muestra datos.
+
+UNA SOLA VEZ: PREPARAR SUPABASE
+1. Creá un proyecto gratis en supabase.com.
+2. Abrí supabase_setup.sql con el Bloc de notas, reemplazá PONE_ACA_TU_CLAVE_DE_ADMIN por tu clave de administrador (una frase larga que solo sepas vos) y guardalo.
+3. En Supabase: SQL Editor > New query > pegá todo el contenido > Run. Tiene que decir "Success".
+4. En Supabase: Project Settings > API: copiá la "Project URL" y la clave "anon" (o "publishable"). Esas dos son públicas, no son secretas.
+
+CARGAR LOS DATOS
+1. Abrí agrotour_preparador_datos.html (doble clic) y cargá el Excel y las fotos.
+2. En "2 · Subir a Supabase" pegá la Project URL y la clave anon, tu clave de administrador, elegí una clave del evento para el equipo y el día hasta el que se mantienen los datos. Tocá "Subir a Supabase".
+3. Tocá "Ver estado y probar" para confirmar que quedó cargado y que la clave del evento abre los datos.
+4. Si cambia el Excel, volvé a subir: reemplaza lo anterior. Los celulares se actualizan solos.
+
+PUBLICAR LA APP (una vez)
+Subí el contenido de este ZIP (index.html, manifest.webmanifest, sw.js y la carpeta icons) a GitHub y publicalo en Vercel.
+En el repositorio NO va ningún dato: ni Excel, ni fotos, ni archivos cifrados.
+
+LINKS PERSONALES (uno por persona)
+1. En el preparador, paso 3: pegá la dirección de la app en Vercel, escribí el nombre de la persona y tocá "Crear y copiar link".
+2. Mandale ese link SOLO a esa persona, por privado. Tiene que abrirlo en el celular donde va a usar la app (en Android tocá "Instalar", en iPhone Compartir > "Agregar a inicio").
+3. Con "Ver accesos" ves quién ya lo abrió ("Vinculado a un celular") y quién no. Si un link figura vinculado y la persona dice que no lo abrió, alguien lo abrió antes: dalo de baja y creá otro.
+4. Si alguien cambia de celular: "Liberar celular" y que abra el mismo link en el nuevo.
+5. Si alguien se va del equipo o pierde el celular: "Dar de baja". Deja de funcionar de inmediato.
+IMPORTANTE: el link se vincula al celular recién cuando alguien lo abre. Hasta entonces, quien lo abra primero se queda con él.
+La app (el ícono) se puede instalar en cualquier celular, pero sin un link vinculado a ese celular no muestra ningún dato.
+
+CUANDO TERMINA EL EVENTO
+1. En el preparador: tu clave de administrador y "Borrar todo de Supabase" (borra datos y links). Los celulares abiertos se vacían solos al actualizar.
+2. Los datos también se borran solos el día siguiente al que elegiste al subirlos (en cuanto alguien abra la app).
+3. Desde la app no se puede borrar nada: el borrado solo se hace desde el preparador con tu clave de administrador.
+4. Si querés cortar todo de raíz: borrá el proyecto de Supabase.
+
+SEGURIDAD
+- Las tablas de Supabase no se pueden leer desde afuera; solo se entra por funciones que piden clave.
+- Los datos están cifrados con la clave del evento (AES-256) antes de subirse.
+- Hay límite de intentos: tras 12 intentos fallidos en 5 minutos se bloquea unos minutos.
+- Cada link personal se puede dar de baja o liberar en cualquier momento.
+- La clave anon es pública por diseño; no sirve sin la clave del evento. Nunca uses la clave "service_role".
+- La clave de administrador no se guarda en ningún lado fuera de Supabase (solo su huella).
+
+SIN SEÑAL
+La app necesita internet para pedir los datos cada vez que se abre. Si el galpón tiene mala cobertura, probalo antes en el lugar.
