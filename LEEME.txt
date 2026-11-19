@@ -16,6 +16,12 @@ CARGAR LOS DATOS
 1. Abrí agrotour_preparador_datos.html (doble clic) y cargá el Excel y las fotos.
 2. En "2 · Subir a Supabase" pegá la Project URL y la clave anon, tu clave de administrador, elegí una clave del evento para el equipo y el día hasta el que se mantienen los datos. Tocá "Subir a Supabase".
 3. Tocá "Ver estado y probar" para confirmar que quedó cargado y que la clave del evento abre los datos.
+   MENÚ ELEGIDO: cargá primero el Excel de participantes y después, con "Cargar menú elegido (Excel)", el Excel con las columnas
+   Nombre, Apellido, Cena y Almuerzo (el número de la opción: 1, 2 o 3; vacío = todavía no eligió). Puede tener una hoja por circuito
+   (Mar, Sierra, Pampa). Se empareja por nombre y apellido dentro de cada circuito, sin importar mayúsculas, tildes ni espacios.
+   También sirve si las columnas Cena y Almuerzo vienen en el mismo Excel de participantes.
+   El preparador avisa cuántos tienen menú cargado y qué filas no encontró. Después tocá "Subir a Supabase" para que lo vea el equipo.
+   Cada vez que lleguen respuestas nuevas: actualizá el Excel, volvé a cargar los dos y subí de nuevo (reemplaza lo anterior).
 4. Si cambia el Excel, volvé a subir: reemplaza lo anterior. Los celulares se actualizan solos.
 
 PUBLICAR LA APP (una vez)
