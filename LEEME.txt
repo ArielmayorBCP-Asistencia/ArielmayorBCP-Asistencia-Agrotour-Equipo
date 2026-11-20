@@ -53,3 +53,10 @@ SEGURIDAD
 
 SIN SEÑAL
 La app necesita internet para pedir los datos cada vez que se abre. Si el galpón tiene mala cobertura, probalo antes en el lugar.
+
+
+INSTALAR EN EL CELULAR (Android)
+Abrir el link en Chrome (no dentro de WhatsApp). Esperar unos segundos: aparece el botón "Instalar" arriba a la derecha,
+o en el menú ⋮ de Chrome la opción "Instalar aplicación". En iPhone: Safari > Compartir > Agregar a inicio.
+Si Chrome solo ofrece "Agregar a pantalla principal", revisar que existan /manifest.webmanifest y /sw.js en la dirección de PRODUCCIÓN de Vercel.
+Cada vez que se publique una versión nueva, subir el número de VERSION en sw.js.
