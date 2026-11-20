@@ -1,6 +1,6 @@
 /* Agrotour · Consulta de participantes — funciona sin conexión.
    Para forzar una actualización de la app: cambiá el número de VERSION. */
-const VERSION='v15',CACHE='agrotour-consulta-'+VERSION;
+const VERSION='v16',CACHE='agrotour-consulta-'+VERSION;
 const SHELL=['./','index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/icon-maskable-512.png','icons/apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(SHELL);self.skipWaiting()})())});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{for(const k of await caches.keys())if(k.startsWith('agrotour-consulta-')&&k!==CACHE)await caches.delete(k);await self.clients.claim()})())});
