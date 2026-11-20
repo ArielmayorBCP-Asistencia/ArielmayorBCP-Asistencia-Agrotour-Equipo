@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Agrotour · Diagnóstico de instalación</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{--crema:#F6F2E2;--verde:#1B4B36;--oscuro:#0F2E22;--gris:#6f7f73;--linea:#E3E0CF;--ok:#14663F;--mal:#B3321F;--aviso:#B07A00}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--crema);color:var(--oscuro);font-family:'Inter Tight',Inter,system-ui,sans-serif;padding:0 0 calc(40px + env(safe-area-inset-bottom,0px))}
+  .top{background:var(--oscuro);color:#fff;padding:calc(18px + env(safe-area-inset-top,0px)) 20px 26px;border-radius:0 0 28px 28px}
+  .top small{display:block;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#F3E7B8;font-weight:700}
+  .top h1{margin:8px 0 0;font-size:26px;line-height:1.1;letter-spacing:-.02em}
+  .wrap{max-width:560px;margin:0 auto;padding:0 16px}
+  #res{margin:-16px 0 0;padding:16px 18px;border-radius:20px;background:#fff;box-shadow:0 14px 30px -16px rgba(15,46,34,.5);font-weight:700;font-size:16px;line-height:1.35}
+  #res.ok{background:var(--ok);color:#fff}#res.mal{background:var(--mal);color:#fff}#res.aviso{background:#FFF1D6;color:#5b3b00}
+  #res small{display:block;font-weight:500;font-size:13.5px;margin-top:6px;opacity:.95}
+  ul{list-style:none;margin:16px 0 0;padding:0}
+  li{display:flex;gap:12px;align-items:flex-start;background:#fff;border-radius:16px;padding:13px 14px;margin-bottom:8px;box-shadow:0 6px 16px -12px rgba(15,46,34,.5)}
+  .i{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 14px/1 sans-serif;background:var(--gris)}
+  .ok .i{background:var(--ok)}.mal .i{background:var(--mal)}.aviso .i{background:var(--aviso)}
+  li b{display:block;font-size:14.5px}
+  li span{display:block;font-size:12.5px;color:var(--gris);margin-top:2px;overflow-wrap:anywhere;line-height:1.4}
+  li.mal span{color:#8a2a1a}
+  button{width:100%;margin-top:10px;padding:15px;border:0;border-radius:16px;background:var(--verde);color:#fff;font:700 15.5px 'Inter Tight',Inter,sans-serif;cursor:pointer}
+  button[hidden]{display:none}
+  .pie{font-size:12px;color:var(--gris);text-align:center;margin-top:18px;line-height:1.5}
+</style></head>
+<body>
+<div class="top"><div class="wrap" style="padding:0"><small>Agrotour 2026</small><h1>Diagnóstico de instalación</h1></div></div>
+<div class="wrap">
+  <div id="res">Revisando…</div>
+  <ul id="lista"></ul>
+  <button id="inst" hidden>Instalar la app ahora</button>
+  <p class="pie">Esta página no muestra ni guarda datos de participantes.<br>Sacale una captura de pantalla y mandásela a quien te está ayudando.</p>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const filas=[];
+function add(estado,titulo,detalle){filas.push({estado,titulo,detalle});
+  $('lista').innerHTML=filas.map(f=>`<li class="${f.estado}"><span class="i">${f.estado==='ok'?'✓':f.estado==='mal'?'✕':'!'}</span><div><b>${f.titulo}</b><span>${f.detalle||''}</span></div></li>`).join('')}
+const base=location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'');
+let pedido=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();pedido=e;$('inst').hidden=false});
+$('inst').onclick=async()=>{if(!pedido)return;pedido.prompt();await pedido.userChoice;pedido=null;$('inst').hidden=true};
+
+async function pedir(ruta,cred){
+  try{const r=await fetch(base+ruta,{cache:'no-store',credentials:cred?'include':'omit'});return{r,ok:r.ok,st:r.status,ct:r.headers.get('content-type')||''}}
+  catch(e){return{ok:false,st:0,ct:'',err:e.message}}
+}
+(async()=>{
+  const problemas=[],avisos=[];const prob=m=>{if(!problemas.includes(m))problemas.push(m)};
+  // 1) Dirección segura
+  const seguro=location.protocol==='https:'||location.hostname==='localhost';
+  add(seguro?'ok':'mal','Dirección segura (https)',location.origin);
+  if(!seguro)prob('La página tiene que abrirse con https:// (publicada en Vercel), no desde un archivo.');
+  // 2) Navegador
+  const ua=navigator.userAgent,enApp=/FBAN|FBAV|Instagram|Line\/|MicroMessenger|; wv\)|WhatsApp|GSA\//i.test(ua),chrome=/Chrome\//.test(ua)&&!/EdgA|OPR|SamsungBrowser/.test(ua);
+  if(enApp){add('mal','Navegador','Estás dentro del navegador de otra app (WhatsApp, Instagram, Gmail…). Abrí el link en Chrome.');prob('Abrí el link en Chrome (menú ⋮ → Abrir en Chrome), no desde WhatsApp.')}
+  else if(!chrome){add('aviso','Navegador','No parece Chrome. Para instalar usá Chrome en Android o Safari en iPhone.');avisos.push('Probá con Chrome (Android) o Safari (iPhone).')}
+  else add('ok','Navegador','Chrome');
+  // 3) Ya instalada
+  const inst=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  add(inst?'aviso':'ok','App ya instalada',inst?'Estás dentro de la app instalada. Chrome no vuelve a ofrecer instalar.':'No, se abre en el navegador');
+  // 4) Manifest
+  const m=await pedir('manifest.webmanifest',true);let mj=null;
+  if(m.ok){try{mj=await m.r.json()}catch(e){}}
+  if(m.ok&&mj){add('ok','manifest.webmanifest','Se lee bien · nombre: '+(mj.name||'(sin nombre)')+' · '+((mj.icons||[]).length)+' íconos')}
+  else if(m.st===401||m.st===403){add('mal','manifest.webmanifest','Error '+m.st+': el sitio lo está bloqueando (pide iniciar sesión).');prob('Vercel está protegiendo el sitio. En Vercel: Settings → Deployment Protection → desactivá “Vercel Authentication”, o usá la dirección de producción.')}
+  else if(m.st===404){add('mal','manifest.webmanifest','Error 404: el archivo no está publicado en esta dirección.');prob('Falta subir manifest.webmanifest a la raíz del repositorio (junto a index.html).')}
+  else{add('mal','manifest.webmanifest',m.err?('No se pudo pedir: '+m.err):('Error '+m.st+(m.ct?' · '+m.ct:'')+(m.ok?' · el contenido no es un manifest válido':'')));prob('El manifest no se puede leer. Revisá que esté subido y que no haya una página de login delante.')}
+  // 5) Íconos
+  if(mj&&mj.icons){
+    for(const ic of mj.icons){
+      const url=new URL(ic.src,base+'manifest.webmanifest').href;
+      const res=await new Promise(ok=>{const im=new Image();im.onload=()=>ok({w:im.naturalWidth,h:im.naturalHeight});im.onerror=()=>ok(null);im.src=url});
+      const nom=ic.src+' ('+(ic.purpose||'any')+')';
+      if(res&&res.w>=192)add('ok','Ícono '+nom,res.w+'×'+res.h);
+      else if(res)add('mal','Ícono '+nom,'Se ve, pero mide '+res.w+'×'+res.h+' y Chrome pide 192 o más.');
+      else{add('mal','Ícono '+nom,'No se puede cargar.');if(!problemas.some(p=>/íconos/.test(p)))prob('Falta subir la carpeta icons/ (con los 4 archivos .png) a la raíz del repositorio.')}
+    }
+  }
+  // 6) Service worker
+  const s=await pedir('sw.js',false);
+  if(s.ok&&/javascript|ecmascript/.test(s.ct)||s.ok&&/addEventListener/.test(s.r?await s.r.clone().text():''))add('ok','sw.js','Se puede leer · '+(s.ct||'tipo sin indicar'));
+  else if(s.st===404){add('mal','sw.js','Error 404: el archivo no está publicado.');prob('Falta subir sw.js a la raíz del repositorio.')}
+  else if(s.st===401||s.st===403){add('mal','sw.js','Error '+s.st+': bloqueado por el sitio.');if(!problemas.some(p=>/protegiendo/.test(p)))prob('Vercel está protegiendo el sitio (ver arriba).')}
+  else{add('mal','sw.js',s.err?('No se pudo pedir: '+s.err):('Error '+s.st));prob('sw.js no se puede leer.')}
+  // 7) Service worker registrado
+  if('serviceWorker' in navigator&&seguro){
+    try{let reg=await navigator.serviceWorker.getRegistration(base);if(!reg)reg=await navigator.serviceWorker.register(base+'sw.js',{scope:base});
+      await navigator.serviceWorker.ready;add('ok','Service worker activo','Registrado y funcionando')}
+    catch(e){add('mal','Service worker','No se pudo registrar: '+e.message);prob('El service worker no se pudo registrar.')}
+  }else add('mal','Service worker','Este navegador o esta dirección no lo permite.');
+  // 8) Evento de instalación
+  await new Promise(r=>setTimeout(r,inst?200:4000));
+  if(inst){/* nada que ofrecer */}
+  else if(pedido)add('ok','Chrome ofrece instalar la app','Tocá el botón verde “Instalar la app ahora”.');
+  else{add(problemas.length?'mal':'aviso','Chrome todavía no ofrece instalar','Si lo de arriba está en verde, cerrá Chrome por completo, volvé a abrir esta página y esperá unos segundos.')}
+  // Resumen
+  const r=$('res');
+  if(inst){r.className='aviso';r.innerHTML='La app ya está instalada.<small>Estás usando la versión instalada.</small>'}
+  else if(pedido){r.className='ok';r.innerHTML='Todo listo para instalar.<small>Tocá “Instalar la app ahora”, abajo.</small>'}
+  else if(problemas.length){r.className='mal';r.innerHTML='Falta resolver '+problemas.length+' cosa'+(problemas.length>1?'s':'')+':<small>'+problemas.map(p=>'• '+p).join('<br>')+'</small>'}
+  else{r.className='aviso';r.innerHTML='Los archivos están bien, pero Chrome todavía no ofrece instalar.<small>'+(avisos.join(' ')||'Cerrá Chrome por completo, volvé a abrir esta página y esperá unos segundos.')+'</small>'}
+})();
+</script>
+</body></html>
